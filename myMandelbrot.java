@@ -9,29 +9,36 @@ package com.example.demo2;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.DoubleProperty;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.PixelWriter;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.image.WritableImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
-import java.util.Scanner;
 
 import javafx.embed.swing.SwingFXUtils;
 import javax.imageio.ImageIO;
@@ -41,22 +48,26 @@ public class myMandelbrot extends Application {
     /* =========================================Variables================================================ */
 
      double width = 800;
-     double height = 800;
+     double height = 600;
      double maximumIterations = 500;
      Canvas canvas = new Canvas(width, height);
      WritableImage actualImage;
      double zoom = 250.0;
+     double zoomInfo = 0;
      double xPos = -470; //add 0 on both of the coordinates for the accurate plane
-     double yPos = 30;
+     double yPos = 0;
      double hue = 264.0;
-    WritableImage image;
-    ImageView imageView;
+     WritableImage image;
+     ImageView imageView;
      double saturation = maximumIterations;
      double brightness = 0.9;
      int R = 60;
      int G = 0;
      int B = 60;
      int THREADS = 6;
+     long startCompilation;
+     long endCompilation;
+     long resultCompilation;
 
     /* =========================================MainMethod================================================ */
 
@@ -130,11 +141,19 @@ public class myMandelbrot extends Application {
 
                         zoom /= 0.7;
 
+                        startCompilation = System.currentTimeMillis();
                         MandelbrotSet();
+                        endCompilation = System.currentTimeMillis();
+                        resultCompilation = (endCompilation-startCompilation);
+                        System.out.println(resultCompilation/1000.0);
                     }
                     case SECONDARY -> {
                         zoom *= 0.7;
+                        startCompilation = System.currentTimeMillis();
                         MandelbrotSet();
+                        endCompilation = System.currentTimeMillis();
+                        resultCompilation = (endCompilation-startCompilation);
+                        System.out.println(resultCompilation/1000.0);
                     }
                 }
             });   //mouse listener for easier zoom
@@ -170,7 +189,7 @@ public class myMandelbrot extends Application {
             MandelbrotSet();
             long end = System.currentTimeMillis();
             long result = (end-start);
-            runTime(group, stage, result);
+            //runTime(group, stage, result);
             System.out.println(result/1000.0);
 
             stage.setTitle("Mandelbrot Set");
@@ -179,86 +198,155 @@ public class myMandelbrot extends Application {
         else if(number==2){
             image = new WritableImage((int) width, (int) height);
             imageView = new ImageView(image);
-            Pane group = new Pane(imageView);
-            Scene scene = new Scene(group, width, height);
+
+            /*SIDEBAR*/
+            VBox infoBox = new VBox(10);
+            infoBox.setPadding(new Insets(10, 10, 10, 10));
+            infoBox.setMinWidth(250);
+
+            Label compilationTimeLabel = new Label("Compilation time: "+resultCompilation);
+            Label imageSizeLabel = new Label("Image size: "+ (int)width +"x"+(int)height);
+
+            HBox imageSizeBox = new HBox(10);
+            imageSizeBox.setAlignment(Pos.CENTER_LEFT);
+            Button saveImageButton = new Button("Save Image");
+            imageSizeBox.getChildren().addAll(imageSizeLabel, saveImageButton);
+
+            Label zoomLevelLabel = new Label("Zoom level:"+zoomInfo);
+
+            Label iterationsLabel = new Label("Iterations: " + (int)maximumIterations);
+            TextField iterationsTextField = new TextField();
+            iterationsTextField.setPrefWidth(60);
+            onlyNumbers(iterationsTextField);
+
+            Button okButton = new Button("Refresh");
+            HBox iterationsBox = new HBox(10);
+            okButton.setOnAction(event -> {
+                maximumIterations=Double.parseDouble(iterationsTextField.getText());
+                startCompilation = System.currentTimeMillis();
+                MandelbrotSet(THREADS);
+                endCompilation = System.currentTimeMillis();
+                resultCompilation = (endCompilation-startCompilation);
+                System.out.println(resultCompilation/1000.0);
+                compilationTimeLabel.setText("Compilation time: " + resultCompilation/1000.0);
+            });
+            iterationsTextField.setOnKeyPressed(event -> {
+                if (event.getCode() == KeyCode.ESCAPE) {
+                    iterationsTextField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    event.consume();
+                }
+            });
+
+            iterationsBox.setAlignment(Pos.CENTER_LEFT);
+            iterationsBox.getChildren().addAll(iterationsLabel, iterationsTextField, okButton);
+
+            Label positionLabel = new Label("Position:");
+
+            ProgressBar progressBar = new ProgressBar();
+            progressBar.setPrefWidth(200);
+
+            infoBox.getChildren().addAll(compilationTimeLabel, imageSizeBox, zoomLevelLabel, iterationsBox, positionLabel, progressBar);
+
+            AnchorPane mainLayout = new AnchorPane(imageView, infoBox);
+            AnchorPane.setTopAnchor(imageView, 0.0);
+            AnchorPane.setBottomAnchor(imageView, 0.0);
+            AnchorPane.setLeftAnchor(imageView, 0.0);
+
+            AnchorPane.setTopAnchor(infoBox, 0.0);
+            AnchorPane.setRightAnchor(infoBox, 0.0);
+            AnchorPane.setBottomAnchor(infoBox, 0.0);
+            /*SIDEBAR*/
+
+            Scene scene = new Scene(mainLayout, width+250, height);
+
+            scene.widthProperty().addListener((obs, oldVal, newVal) -> {
+                width = (int)newVal.doubleValue()-250;
+                image = new WritableImage((int) width, (int) height);
+                imageView.setImage(image);
+                imageSizeLabel.setText("Image size: "+ (int)width +"x"+(int)height);
+                MandelbrotSet(THREADS);
+            });
+
+            scene.heightProperty().addListener((obs, oldVal, newVal) -> {
+                height = (int)newVal.doubleValue();
+                image = new WritableImage((int) width, (int) height);
+                imageView.setImage(image);
+                MandelbrotSet(THREADS);
+            });
+
             scene.setOnKeyPressed(event -> {
                 switch (event.getCode()) {
                     case W, UP -> {
                         if (event.isShiftDown()) {
                             upParallel(10);
+                            runTime(compilationTimeLabel);
                         } else {
                             upParallel(100);
+                            runTime(compilationTimeLabel);
                         }
                     }
                     case A, LEFT -> {
                         if (event.isShiftDown()) {
                             leftParallel(10);
+                            runTime(compilationTimeLabel);
                         } else {
                             leftParallel(100);
+                            runTime(compilationTimeLabel);
                         }
                     }
                     case S, DOWN -> {
                         if (event.isShiftDown()) {
                             downParallel(10);
+                            runTime(compilationTimeLabel);
                         } else {
                             downParallel(100);
+                            runTime(compilationTimeLabel);
                         }
                     }
                     case D, RIGHT -> {
                         if (event.isShiftDown()) {
                             rightParallel(10);
+                            runTime(compilationTimeLabel);
                         } else {
                             rightParallel(100);
+                            runTime(compilationTimeLabel);
                         }
                     }
-                    case EQUALS -> zoomInParallel();
-                    case MINUS -> zoomOutParallel();
-                    case SPACE -> resetParallel();
-                    case ESCAPE -> Platform.exit();
+                    case EQUALS -> {zoomInParallel();runTime(compilationTimeLabel);}
+                    case MINUS -> {zoomOutParallel();runTime(compilationTimeLabel);}
+                    case BACK_SPACE -> {resetParallel();runTime(compilationTimeLabel);}
+                    //case ESCAPE -> Platform.exit();
+                    case DIGIT1 -> {colorLightParallel();runTime(compilationTimeLabel);}
+                    case DIGIT2 -> {colorDarkParallel();runTime(compilationTimeLabel);}
+                    case DIGIT3 -> {colorHueParallel();runTime(compilationTimeLabel);}
+                    case DIGIT4 -> {colorWhiteParallel();runTime(compilationTimeLabel);}
                 }
             });     //key listener
             scene.setOnMouseClicked(event -> {
                 switch (event.getButton()) {
                     case PRIMARY -> {
-
                         zoom /= 0.7;
-
-                        MandelbrotSet(THREADS);
+                        runTime(compilationTimeLabel);
                     }
                     case SECONDARY -> {
                         zoom *= 0.7;
-                        MandelbrotSet(THREADS);
+                        runTime(compilationTimeLabel);
                     }
                 }
             });   //mouse listener for easier zoom
 
             stage.setScene(scene);
 
-            long start = System.currentTimeMillis();
+            startCompilation = System.currentTimeMillis();
             MandelbrotSet(THREADS);
-            long end = System.currentTimeMillis();
-            long result = (end-start);
-            System.out.println(result/1000.0);
+            endCompilation = System.currentTimeMillis();
+            resultCompilation = (endCompilation-startCompilation);
+            System.out.println(resultCompilation/1000.0);
+            compilationTimeLabel.setText("Compilation time: " + resultCompilation/1000.0+"sec.");
 
             stage.setTitle("Mandelbrot Set");
             stage.show();
         }
-    }
-
-    /* =========================================Iterations================================================ */
-
-    public int iterationChecker(double cr, double ci) {
-        int iterationsOfZ = 0;
-        double zr = 0.0;
-        double zi = 0.0;
-
-        while (iterationsOfZ < maximumIterations && (zr * zr) + (zi * zi) < 4) {
-            double oldZr = zr;
-            zr = (zr * zr) - (zi * zi) + cr;
-            zi = 2 * (oldZr * zi) + ci;
-            iterationsOfZ++;
-        }
-        return iterationsOfZ;
     }
 
     /* ========================================MandelbrotSet============================================== */
@@ -272,19 +360,27 @@ public class myMandelbrot extends Application {
             for (int y = 0; y < canvas.getHeight(); y++) {
                 double cr = xPos / width + (x - centerY) / zoom;
                 double ci = yPos / height + (y - centerX) / zoom;       //getting position of the points on the canvas
+                double zr = 0;
+                double zi = 0;
 
-                int iterations = iterationChecker(cr, ci);
+                int iterationsOfZ;
 
-                if (iterations == maximumIterations) {  //inside the set
+                for (iterationsOfZ = 0; iterationsOfZ < maximumIterations && (zr * zr) + (zi * zi) < 4; iterationsOfZ++) {
+                    double oldZr = zr;
+                    zr = (zr * zr) - (zi * zi) + cr;
+                    zi = 2 * (oldZr * zi) + ci;
+                }
+
+                if (iterationsOfZ == maximumIterations) {  //inside the set
                     image.getPixelWriter().setColor(x, y, Color.rgb(R, G, B));
                 } else if (brightness == 0.9) {  //white background
-                    image.getPixelWriter().setColor(x, y, Color.hsb(hue, iterations / maximumIterations, brightness));
+                    image.getPixelWriter().setColor(x, y, Color.hsb(hue, iterationsOfZ / maximumIterations, brightness));
                 } else if (hue == 300) {  //colorful background
-                    image.getPixelWriter().setColor(x, y, Color.hsb(hue * iterations / maximumIterations, saturation, brightness));
+                    image.getPixelWriter().setColor(x, y, Color.hsb(hue * iterationsOfZ / maximumIterations, saturation, brightness));
                 } else if (hue == 0 && saturation == 0 && brightness == 1) {
                     image.getPixelWriter().setColor(x, y, Color.hsb(hue, saturation, brightness));
                 } else {   //black background
-                    image.getPixelWriter().setColor(x, y, Color.hsb(hue, saturation, iterations / brightness));
+                    image.getPixelWriter().setColor(x, y, Color.hsb(hue, saturation, iterationsOfZ / brightness));
                 }
             }
         }
@@ -294,7 +390,7 @@ public class myMandelbrot extends Application {
     /* ===========================================Parallel================================================== */
 
     public void MandelbrotSet(int n) {
-        int portion = (int) width / n;
+        int portion = (int) height / n;
         List<myMandelbrot.MandelbrotService> services = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(n);
 
@@ -347,7 +443,7 @@ public class myMandelbrot extends Application {
             return new Task<WritableImage>() {
                 @Override
                 protected WritableImage call() {
-                    WritableImage localImage = new WritableImage((int) width, end - start);
+                    WritableImage localImage = new WritableImage((int) width, (int)end - start);
                     double centerY = width / 2.0;
                     double centerX = height / 2.0;
                     PixelWriter pixelWriter = localImage.getPixelWriter(); // use localImage instead of image
@@ -366,10 +462,20 @@ public class myMandelbrot extends Application {
                                 zi = 2 * (oldZr * zi) + ci;
                             }
 
-                            if (iterationsOfZ < maximumIterations) {
-                                pixelWriter.setColor(x, y - start, javafx.scene.paint.Color.hsb(iterationsOfZ % hue, iterationsOfZ / saturation, brightness));
-                            } else {
+                            if(iterationsOfZ == maximumIterations){
                                 pixelWriter.setColor(x, y - start, javafx.scene.paint.Color.rgb(R, G, B));
+                            }
+                            else if(brightness == 0.9){
+                                pixelWriter.setColor(x, y - start, javafx.scene.paint.Color.hsb(iterationsOfZ % hue, iterationsOfZ / maximumIterations, brightness));
+                            }
+                            else if(hue == 300){
+                                pixelWriter.setColor(x, y - start, javafx.scene.paint.Color.hsb(hue*iterationsOfZ/maximumIterations, saturation, brightness));
+                            }
+                            else if(hue == 0 && saturation == 0 && brightness == 1){
+                                pixelWriter.setColor(x, y - start, javafx.scene.paint.Color.hsb(hue, saturation, brightness));
+                            }
+                            else{
+                                pixelWriter.setColor(x, y - start, javafx.scene.paint.Color.hsb(hue, saturation, iterationsOfZ/brightness));
                             }
                         }
                     }
@@ -379,14 +485,24 @@ public class myMandelbrot extends Application {
         }
     }
     private void mergeImages(List<WritableImage> images) {
+        int totalHeight = images.stream().mapToInt(img -> (int) img.getHeight()).sum();
+        if (width != (int) image.getWidth() || totalHeight != (int) image.getHeight()) {
+            image = new WritableImage((int)width, totalHeight);
+            imageView.setImage(image);
+        }
         PixelWriter pixelWriter = image.getPixelWriter();
         int currentHeight = 0;
         for (WritableImage img : images) {
             int imgHeight = (int) img.getHeight();
-            pixelWriter.setPixels(0, currentHeight, (int) width, imgHeight, img.getPixelReader(), 0, 0);
+            int imgWidth = (int) img.getWidth();
+            System.out.println("Source image dimensions: " + imgWidth + "x" + imgHeight);
+            System.out.println("Destination image dimensions: " + image.getWidth() + "x" + image.getHeight());
+            System.out.println("setPixels arguments: " + "0, " + currentHeight + ", " + imgWidth + ", " + imgHeight + ", img.getPixelReader(), 0, 0");
+            pixelWriter.setPixels(0, currentHeight, imgWidth, imgHeight, img.getPixelReader(), 0, 0);
             currentHeight += imgHeight;
         }
     }
+
 
     /* ===========================================Colors================================================== */
 
@@ -426,6 +542,38 @@ public class myMandelbrot extends Application {
         B = 0;
         MandelbrotSet();
     }
+    public void colorLightParallel() {
+        hue = 246.0;
+        saturation = maximumIterations;
+        brightness = 0.9;
+        R = 60;
+        G = 0;
+        B = 60;
+    }
+    public void colorDarkParallel() {
+        hue = 0;
+        saturation = 0;
+        brightness = maximumIterations;
+        R = 15;
+        G = 15;
+        B = 15;
+    }
+    public void colorHueParallel() {
+        hue = 300.0;
+        saturation = 1.0;
+        brightness = 1.0;
+        R = 35;
+        G = 0;
+        B = 35;
+    }
+    public void colorWhiteParallel() {
+        hue = 0.0;
+        saturation = 0.0;
+        brightness = 1.0;
+        R = 0;
+        G = 0;
+        B = 0;
+    }
 
     /* ==========================================Position================================================= */
 
@@ -461,39 +609,32 @@ public class myMandelbrot extends Application {
     }
     public void upParallel(int number) {
         yPos -= (height / zoom) * number;
-        MandelbrotSet(THREADS);
     }
 
     public void downParallel(int number) {
         yPos += (height / zoom) * number;
-        MandelbrotSet(THREADS);
     }
 
     public void leftParallel(int number) {
         xPos -= (width / zoom) * number;
-        MandelbrotSet(THREADS);
     }
 
     public void rightParallel(int number) {
         xPos += (width / zoom) * number;
-        MandelbrotSet(THREADS);
     }
 
     public void zoomInParallel() {
         zoom /= 0.7;
-        MandelbrotSet(THREADS);
     }
 
     public void zoomOutParallel() {
         zoom *= 0.7;
-        MandelbrotSet(THREADS);
     }
 
     public void resetParallel() {
         zoom = 250.0;
         xPos = -470;
         yPos = 30;
-        MandelbrotSet(THREADS);
     }
 
     /* ==========================================SaveImage================================================ */
@@ -701,11 +842,12 @@ public class myMandelbrot extends Application {
 
     /* ==========================================CalculateRunTime============================================ */
 
-    public void runTime(Group group, Stage stage, long result){
-        Label label = new Label((" Time to compile: " +(result/1000.0) + " sec."));
-        label.layoutXProperty().bind(stage.widthProperty().subtract(stage.getWidth()));   //Should align label to horizontal center, but it is off
-        label.layoutYProperty().bind(stage.heightProperty().subtract(label.getHeight() + 45));
-        group.getChildren().add(label);
+    public void runTime(Label compilationTimeLabel){
+        startCompilation = System.currentTimeMillis();
+        MandelbrotSet(THREADS);
+        endCompilation = System.currentTimeMillis();
+        resultCompilation = (endCompilation-startCompilation);
+        System.out.println(resultCompilation/1000.0);
+        compilationTimeLabel.setText("Compilation time: " + resultCompilation/1000.0);
     }
-
 }
