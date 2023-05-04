@@ -87,7 +87,9 @@ public class myMandelbrot extends Application {
     @Override
     public void start(Stage stage) {
         //creating a dialog from where you choose the execution mode
-
+        stage.setMinHeight(575);
+        stage.setMinWidth(385+250);
+        stage.setResizable(true);
         Dialog<Integer> dialog = new Dialog<>();
         dialog.setTitle("Choose Mode");
         dialog.setHeaderText(null);
@@ -424,8 +426,9 @@ public class myMandelbrot extends Application {
                     case MINUS -> {zoomOut();MandelbrotSet();}
                     case BACK_SPACE -> {reset();MandelbrotSet();}
                     case DIGIT1 -> {colorHue();MandelbrotSet();}
-                    case DIGIT2 -> {colorLight();MandelbrotSet();}
-                    case DIGIT3 -> {colorDark();MandelbrotSet();}
+                    case DIGIT2 -> {colorHue2();MandelbrotSet();}
+                    case DIGIT3 -> {colorLight();MandelbrotSet();}
+                    case DIGIT4 -> {colorDark();MandelbrotSet();}
                 }
             });     //key listener
             scene.setOnMouseClicked(event -> {
@@ -742,8 +745,9 @@ public class myMandelbrot extends Application {
                     case MINUS -> {zoomOut();MandelbrotSet(THREADS);}
                     case BACK_SPACE -> {reset();MandelbrotSet(THREADS);}
                     case DIGIT1 -> {colorHue();MandelbrotSet(THREADS);}
-                    case DIGIT2 -> {colorLight();MandelbrotSet(THREADS);}
-                    case DIGIT3 -> {colorDark();MandelbrotSet(THREADS);}
+                    case DIGIT2 -> {colorHue2();MandelbrotSet(THREADS);}
+                    case DIGIT3 -> {colorLight();MandelbrotSet(THREADS);}
+                    case DIGIT4 -> {colorDark();MandelbrotSet(THREADS);}
                 }
             });     //key listener
             scene.setOnMouseClicked(event -> {
@@ -817,10 +821,12 @@ public class myMandelbrot extends Application {
                     image.getPixelWriter().setColor(x, y, colorOfSet);
                 } else if (determineColor == 1) {
                     image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 * iterationsOfZ % 360, saturationFactor , brightnessFactor));
-                } else if (determineColor == 2) {
+                } else if (determineColor == 3) {
                     image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 % 360, iterationsOfZ/maximumIterations, brightnessFactor));
-                } else if (determineColor == 3){   //black background
+                } else if (determineColor == 4){   //black background
                     image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 % 360, saturationFactor, iterationsOfZ / maximumIterations));
+                } else if (determineColor == 2){
+                    image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor*iterationsOfZ*7%360, saturationFactor , brightnessFactor));
                 }
             }
         }
@@ -928,10 +934,12 @@ public class myMandelbrot extends Application {
                                 pixelWriter.setColor(x, y - start, colorOfSet);
                             } else if (determineColor == 1) {
                                 pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 * iterationsOfZ % 360, saturationFactor , brightnessFactor));
-                            } else if (determineColor == 2) {
+                            } else if (determineColor == 3) {
                                 pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 % 360, iterationsOfZ/maximumIterations, brightnessFactor));
-                            } else if (determineColor == 3){   //black background
+                            } else if (determineColor == 4){   //black background
                                 pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 % 360, saturationFactor, iterationsOfZ / maximumIterations));
+                            } else if (determineColor == 2){
+                                pixelWriter.setColor(x, y - start, Color.hsb(hueFactor*iterationsOfZ * 7 % 360, saturationFactor , brightnessFactor));
                             }
                         }
                         updateProgress(y - start + 1, end - start);
@@ -966,14 +974,14 @@ public class myMandelbrot extends Application {
         saturationFactor = 1;
         brightnessFactor = 0.9;
         colorOfSet = Color.web("#43003E");
-        determineColor = 2;
+        determineColor = 3;
     }
     public void colorDark() {
         hueFactor = 0;
         saturationFactor = 0;
         brightnessFactor = maximumIterations;
         colorOfSet = Color.web("#000000");
-        determineColor = 3;
+        determineColor = 4;
     }
     public void colorHue() {
         hueFactor = 0.7;
@@ -981,6 +989,13 @@ public class myMandelbrot extends Application {
         brightnessFactor = 1.0;
         colorOfSet = Color.web("#43003E");
         determineColor = 1;
+    }
+    public void colorHue2(){
+        hueFactor = 0.7;
+        saturationFactor = 0.7;
+        brightnessFactor = 1.0;
+        colorOfSet = Color.web("#43003E");
+        determineColor = 2;
     }
 
     /* ==========================================Position================================================= */
