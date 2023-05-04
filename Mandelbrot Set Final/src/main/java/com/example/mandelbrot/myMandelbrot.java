@@ -9,6 +9,7 @@ package com.example.mandelbrot;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -28,6 +29,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -41,6 +43,7 @@ import java.util.stream.Collectors;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.util.Duration;
 import javax.imageio.ImageIO;
+import javafx.animation.PauseTransition;
 
 public class myMandelbrot extends Application {
 
@@ -56,7 +59,6 @@ public class myMandelbrot extends Application {
     double hueFactor = 0.8; // Change this factor to adjust the rate of color change
     double saturationFactor = 1; // Set the saturation to a high value for vibrant colors
     double brightnessFactor = 1;
-    String insideColor = "#43003E";
     int determineColor;
     int THREADS = Runtime.getRuntime().availableProcessors();
     long resultCompilation;
@@ -67,6 +69,9 @@ public class myMandelbrot extends Application {
     BorderPane mainLayout;
     Canvas canvas = new Canvas((int)width, (int)height);
     WritableImage actualImage;
+    Color colorOfSet=Color.web("#43003E");
+    private static final Duration RESIZE_DELAY = Duration.millis(200);
+    private final PauseTransition pauseTransition = new PauseTransition(RESIZE_DELAY);
 
     /* =========================================MainMethod================================================ */
 
@@ -255,6 +260,8 @@ public class myMandelbrot extends Application {
 
             Label labelHSB = new Label("HSB");
 
+            Label selectedColor = new Label("Change the color inside the set:");
+
             Label enterValues = new Label("Enter HSB values between 0.0 and 1.0:");
             labelHSB.setMinWidth(20);
             labelHSB.setPadding(new Insets(5, 0,0,0));
@@ -293,11 +300,46 @@ public class myMandelbrot extends Application {
                 MandelbrotSet();
             });
 
-            infoBox.getChildren().addAll(compilationTimeLabel, progressBar, iterationsBox, imageSizeBox, imageCompilationLabel, activeThreads, separator, enterValues, HSB);
+            ColorPicker colorPicker = new ColorPicker();
+
+            // Set the initial color
+            colorPicker.setValue(Color.WHITE);
+
+            // Add an action listener to store the selected color in a variable
+            colorPicker.setOnAction(event -> {
+                colorOfSet = colorPicker.getValue();
+                System.out.println("Selected Color: " + colorOfSet.toString());
+                MandelbrotSet();
+            });
+
+            Button resetInside = new Button("Reset");
+            resetInside.setOnAction(actionEvent -> {
+                if (determineColor == 2 || determineColor == 1)
+                colorOfSet = Color.web("#43003E");
+                else colorOfSet=Color.web("#000000");
+                MandelbrotSet();
+            });
+
+            HBox insideSet = new HBox(colorPicker, resetInside);
+            insideSet.setSpacing(12);
+            resetInside.setPrefWidth(60);
+            colorPicker.setPrefWidth(145);
+
+            Label madeBy = new Label("Made by: Valentino Ivanovski\n           For Programming III\n                   UP FAMNIT");
+            madeBy.setTextFill(Paint.valueOf("#A9A9A9"));
+            madeBy.setFont(new Font(10));
+            VBox madeByContainer = new VBox();
+            madeByContainer.setAlignment(Pos.CENTER);
+            madeByContainer.setPadding(new Insets(4,20,0,0));
+            madeByContainer.getChildren().add(madeBy);
+
+
+            infoBox.getChildren().addAll(compilationTimeLabel, progressBar, iterationsBox, imageSizeBox, imageCompilationLabel, activeThreads, separator, enterValues, HSB, selectedColor, insideSet, madeByContainer);
 
             mainLayout = new BorderPane();
             mainLayout.setCenter(canvas);
             mainLayout.setRight(infoBox);
+
             /*SIDEBAR*/
 
             Scene scene = new Scene(mainLayout, width+250, height);
@@ -306,14 +348,16 @@ public class myMandelbrot extends Application {
             canvas.heightProperty().bind(scene.heightProperty());
 
             canvas.widthProperty().addListener((obs, oldVal, newVal) -> {
-                imageSizeLabel.setText("Image size: "+ (int)newVal.doubleValue() +"x"+(int)canvas.getHeight());
-                widthTextField.setText(String.valueOf((int)newVal.doubleValue()));
-                MandelbrotSet();
+                imageSizeLabel.setText("Image size: " + (int) newVal.doubleValue() + "x" + (int) canvas.getHeight());
+                widthTextField.setText(String.valueOf((int) newVal.doubleValue()));
+                pauseTransition.setOnFinished(e -> MandelbrotSet());
+                pauseTransition.playFromStart();
             });
 
             canvas.heightProperty().addListener((obs, oldVal, newVal) -> {
-                heightTextField.setText(String.valueOf((int)newVal.doubleValue()));
-                MandelbrotSet();
+                heightTextField.setText(String.valueOf((int) newVal.doubleValue()));
+                pauseTransition.setOnFinished(e -> MandelbrotSet());
+                pauseTransition.playFromStart();
             });
 
 
@@ -503,6 +547,8 @@ public class myMandelbrot extends Application {
 
             Label labelHSB = new Label("HSB");
 
+            Label selectedColor = new Label("Change the color inside the set:");
+
             Label enterValues = new Label("Enter HSB values between 0.0 and 1.0:");
             labelHSB.setMinWidth(20);
             labelHSB.setPadding(new Insets(5, 0,0,0));
@@ -541,7 +587,40 @@ public class myMandelbrot extends Application {
                 MandelbrotSet(THREADS);
             });
 
-            infoBox.getChildren().addAll(compilationTimeLabel, progressBar, iterationsBox, imageSizeBox, imageCompilationLabel, activeThreads, separator, enterValues, HSB);
+            ColorPicker colorPicker = new ColorPicker();
+
+            // Set the initial color
+            colorPicker.setValue(Color.WHITE);
+
+            // Add an action listener to store the selected color in a variable
+            colorPicker.setOnAction(event -> {
+                colorOfSet = colorPicker.getValue();
+                System.out.println("Selected Color: " + colorOfSet.toString());
+                MandelbrotSet();
+            });
+
+            Button resetInside = new Button("Reset");
+            resetInside.setOnAction(actionEvent -> {
+                if (determineColor == 2 || determineColor == 1)
+                    colorOfSet = Color.web("#43003E");
+                else colorOfSet=Color.web("#000000");
+                MandelbrotSet();
+            });
+
+            HBox insideSet = new HBox(colorPicker, resetInside);
+            insideSet.setSpacing(12);
+            resetInside.setPrefWidth(60);
+            colorPicker.setPrefWidth(145);
+
+            Label madeBy = new Label("Made by: Valentino Ivanovski\n           For Programming III\n                   UP FAMNIT");
+            madeBy.setTextFill(Paint.valueOf("#A9A9A9"));
+            madeBy.setFont(new Font(10));
+            VBox madeByContainer = new VBox();
+            madeByContainer.setAlignment(Pos.CENTER);
+            madeByContainer.setPadding(new Insets(4,20,0,0));
+            madeByContainer.getChildren().add(madeBy);
+
+            infoBox.getChildren().addAll(compilationTimeLabel, progressBar, iterationsBox, imageSizeBox, imageCompilationLabel, activeThreads, separator, enterValues, HSB, selectedColor, insideSet, madeByContainer);
 
             mainLayout = new BorderPane();
             mainLayout.setCenter(canvas);
@@ -554,14 +633,16 @@ public class myMandelbrot extends Application {
             canvas.heightProperty().bind(scene.heightProperty());
 
             canvas.widthProperty().addListener((obs, oldVal, newVal) -> {
-                imageSizeLabel.setText("Image size: "+ (int)newVal.doubleValue() +"x"+(int)canvas.getHeight());
-                widthTextField.setText(String.valueOf((int)newVal.doubleValue()));
-                MandelbrotSet(THREADS);
+                imageSizeLabel.setText("Image size: " + (int) newVal.doubleValue() + "x" + (int) canvas.getHeight());
+                widthTextField.setText(String.valueOf((int) newVal.doubleValue()));
+                pauseTransition.setOnFinished(e -> MandelbrotSet(THREADS));
+                pauseTransition.playFromStart();
             });
 
             canvas.heightProperty().addListener((obs, oldVal, newVal) -> {
-                heightTextField.setText(String.valueOf((int)newVal.doubleValue()));
-                MandelbrotSet(THREADS);
+                heightTextField.setText(String.valueOf((int) newVal.doubleValue()));
+                pauseTransition.setOnFinished(e -> MandelbrotSet(THREADS));
+                pauseTransition.playFromStart();
             });
 
 
@@ -678,7 +759,7 @@ public class myMandelbrot extends Application {
                 }
 
                 if (iterationsOfZ == maximumIterations) {  //inside the set
-                    image.getPixelWriter().setColor(x, y, Color.web(insideColor));
+                    image.getPixelWriter().setColor(x, y, colorOfSet);
                 } else if (determineColor == 1) {
                     image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 * iterationsOfZ % 360, saturationFactor , brightnessFactor));
                 } else if (determineColor == 2) {
@@ -781,7 +862,7 @@ public class myMandelbrot extends Application {
                             }
 
                             if (iterationsOfZ == maximumIterations) {  //inside the set
-                                pixelWriter.setColor(x, y - start, Color.web(insideColor));
+                                pixelWriter.setColor(x, y - start, colorOfSet);
                             } else if (determineColor == 1) {
                                 pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 * iterationsOfZ % 360, saturationFactor , brightnessFactor));
                             } else if (determineColor == 2) {
@@ -818,21 +899,21 @@ public class myMandelbrot extends Application {
         hueFactor = 0.6;
         saturationFactor = 1;
         brightnessFactor = 0.9;
-        insideColor = "#43003E";
+        colorOfSet = Color.web("#43003E");
         determineColor = 2;
     }
     public void colorDark() {
         hueFactor = 0;
         saturationFactor = 0;
         brightnessFactor = maximumIterations;
-        insideColor = "#000000";
+        colorOfSet = Color.web("#000000");
         determineColor = 3;
     }
     public void colorHue() {
         hueFactor = 0.7;
         saturationFactor = 0.7;
         brightnessFactor = 1.0;
-        insideColor = "#43003E";
+        colorOfSet = Color.web("#43003E");
         determineColor = 1;
     }
 
