@@ -13,6 +13,9 @@ import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.binding.DoubleExpression;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -43,7 +46,6 @@ import java.util.stream.Collectors;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.util.Duration;
 import javax.imageio.ImageIO;
-import javafx.animation.PauseTransition;
 
 public class myMandelbrot extends Application {
 
@@ -55,6 +57,7 @@ public class myMandelbrot extends Application {
     double zoom = 250.0;
     double xPos = -470; //add 0 on both of the coordinates for the accurate plane
     double yPos = 0;
+    int supersamplingFactor=4;
     WritableImage image;
     double hueFactor = 0.8; // Change this factor to adjust the rate of color change
     double saturationFactor = 1; // Set the saturation to a high value for vibrant colors
@@ -83,30 +86,23 @@ public class myMandelbrot extends Application {
 
     @Override
     public void start(Stage stage) {
-        // create a new dialog
-        Dialog<Integer> dialog = new Dialog<>();
+        //creating a dialog from where you choose the execution mode
 
-        // set the title and header text
+        Dialog<Integer> dialog = new Dialog<>();
         dialog.setTitle("Choose Mode");
         dialog.setHeaderText(null);
 
-        // importing image and adding it to an imageView
-        //Image imageLogo = new Image(getClass().getResource("/Image.png").toString());
         Image imageLogo = new Image(Objects.requireNonNull(getClass().getResource("/Image.png")).toString());
         ImageView imageViewDialog = new ImageView(imageLogo);
 
-        // create a label
         Label label = new Label("Choose Mode:");
         Font font = new Font("Arial Bold", 15);
         label.setPadding(new Insets(0, 0, 7, 0));
         label.setTextFill(Color.web("#633B5D"));
-
-        // set the label's font to the new font
         label.setFont(font);
         label.setMinWidth(300);
         label.setAlignment(Pos.CENTER);
 
-        // create three buttons
         Button sequentialButton = new Button("Sequential");
         sequentialButton.setMinWidth(76);
         sequentialButton.setOnAction(event -> {
@@ -131,23 +127,17 @@ public class myMandelbrot extends Application {
             dialog.close();
         });
 
-        // create a VBox to hold the content
         VBox content = new VBox(imageViewDialog, label, sequentialButton, parallelButton, distributedButton);
         content.setSpacing(10);
         content.setAlignment(Pos.CENTER);
 
-        // set the dialog content
-        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().setContent(content); //adding the vbox to the dialog
 
         // make the dialog close when pressing x
         dialog.getDialogPane().getScene().getWindow().setOnCloseRequest(event -> dialog.close());
 
-        // show the dialog and wait for a result
         imageViewDialog.requestFocus();
         dialog.showAndWait();
-
-        // use the selected number
-        System.out.println("Selected number: " + number);
 
         /* ============================================SequentialStage================================================ */
 
@@ -158,12 +148,11 @@ public class myMandelbrot extends Application {
             infoBox.setMinWidth(250);
 
             compilationTimeLabel = new Label();
-            Label imageSizeLabel = new Label("Image size:");
             imageCompilationLabel = new Label("Execution time of saved image: null");
 
             TextField widthTextField = new TextField(String.valueOf((int)width));
             widthTextField.setPrefWidth(50);
-            Label xLabel = new Label("x");
+            Label x = new Label("x");
             TextField heightTextField = new TextField(String.valueOf((int)height));
             heightTextField.setPrefWidth(50);
 
@@ -172,20 +161,18 @@ public class myMandelbrot extends Application {
                     heightTextField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
                     event.consume();
                 }
-            }); //Press esc to deselect the text field
+            });
 
             widthTextField.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
                     widthTextField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
                     event.consume();
                 }
-            }); //Press esc to deselect the text field
+            });
 
             HBox imageSizeBox = new HBox(10);
-            imageSizeBox.setAlignment(Pos.CENTER_LEFT);
             Button saveImageButton = new Button("Save Image");
 
-            //Save Image button that saves the image of any size
             saveImageButton.setOnAction(event ->{
                 canvas.widthProperty().unbind();
                 canvas.heightProperty().unbind();
@@ -197,13 +184,13 @@ public class myMandelbrot extends Application {
                 imageCompilationLabel.setText("Execution time of saved image: " + resultCompilation/1000.0);
                 MandelbrotSet();
 
-                FileChooser fc = new FileChooser();
-                fc.setTitle("Save File");
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Save File");
                 FileChooser.ExtensionFilter extensions = new FileChooser.ExtensionFilter("Images *.jpg, *.png", "*.jpg", "*.png");  //allowing the image to be saved as png or jpg
 
-                fc.getExtensionFilters().add(extensions);
+                fileChooser.getExtensionFilters().add(extensions);
 
-                File file = fc.showSaveDialog(stage);
+                File file = fileChooser.showSaveDialog(stage);
                 if (file != null) {
                     try {
                         canvas.snapshot(null, actualImage);
@@ -230,7 +217,7 @@ public class myMandelbrot extends Application {
 
             infoBox.getChildren().add(imageViewLogo);
 
-            imageSizeBox.getChildren().addAll(widthTextField, xLabel, heightTextField, saveImageButton);
+            imageSizeBox.getChildren().addAll(widthTextField, x, heightTextField, saveImageButton);
 
             Label iterationsLabel = new Label("Iterations: " + (int)maximumIterations);
             TextField iterationsTextField = new TextField();
@@ -256,7 +243,7 @@ public class myMandelbrot extends Application {
             iterationsBox.setAlignment(Pos.CENTER_LEFT);
             iterationsBox.getChildren().addAll(iterationsLabel, iterationsTextField, refreshButton);
 
-            progressBar.setPrefWidth(200);
+            progressBar.setPrefWidth(220);
 
             Label labelHSB = new Label("HSB");
 
@@ -348,7 +335,6 @@ public class myMandelbrot extends Application {
             canvas.heightProperty().bind(scene.heightProperty());
 
             canvas.widthProperty().addListener((obs, oldVal, newVal) -> {
-                imageSizeLabel.setText("Image size: " + (int) newVal.doubleValue() + "x" + (int) canvas.getHeight());
                 widthTextField.setText(String.valueOf((int) newVal.doubleValue()));
                 pauseTransition.setOnFinished(e -> MandelbrotSet());
                 pauseTransition.playFromStart();
@@ -402,10 +388,9 @@ public class myMandelbrot extends Application {
                     case EQUALS -> {zoomIn();MandelbrotSet();}
                     case MINUS -> {zoomOut();MandelbrotSet();}
                     case BACK_SPACE -> {reset();MandelbrotSet();}
-                    //case ESCAPE -> Platform.exit();
+                    case DIGIT1 -> {colorHue();MandelbrotSet();}
                     case DIGIT2 -> {colorLight();MandelbrotSet();}
                     case DIGIT3 -> {colorDark();MandelbrotSet();}
-                    case DIGIT1 -> {colorHue();MandelbrotSet();}
                 }
             });     //key listener
             scene.setOnMouseClicked(event -> {
@@ -445,12 +430,11 @@ public class myMandelbrot extends Application {
             infoBox.setMinWidth(250);
 
             compilationTimeLabel = new Label();
-            Label imageSizeLabel = new Label("Image size:");
             imageCompilationLabel = new Label("Execution time of saved image: null");
 
             TextField widthTextField = new TextField(String.valueOf((int)width));
             widthTextField.setPrefWidth(50);
-            Label xLabel = new Label("x");
+            Label x = new Label("x");
             TextField heightTextField = new TextField(String.valueOf((int)height));
             heightTextField.setPrefWidth(50);
 
@@ -459,20 +443,18 @@ public class myMandelbrot extends Application {
                     heightTextField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
                     event.consume();
                 }
-            }); //Press esc to deselect the text field
+            });
 
             widthTextField.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
                     widthTextField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
                     event.consume();
                 }
-            }); //Press esc to deselect the text field
+            });
 
             HBox imageSizeBox = new HBox(10);
-            imageSizeBox.setAlignment(Pos.CENTER_LEFT);
             Button saveImageButton = new Button("Save Image");
 
-            //Save Image button that saves the image of any size
             saveImageButton.setOnAction(event ->{
                 canvas.widthProperty().unbind();
                 canvas.heightProperty().unbind();
@@ -484,13 +466,13 @@ public class myMandelbrot extends Application {
                 imageCompilationLabel.setText("Execution time of saved image: " + resultCompilation/1000.0);
                 MandelbrotSet(THREADS);
 
-                FileChooser fc = new FileChooser();
-                fc.setTitle("Save File");
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Save File");
                 FileChooser.ExtensionFilter extensions = new FileChooser.ExtensionFilter("Images *.jpg, *.png", "*.jpg", "*.png");  //allowing the image to be saved as png or jpg
 
-                fc.getExtensionFilters().add(extensions);
+                fileChooser.getExtensionFilters().add(extensions);
 
-                File file = fc.showSaveDialog(stage);
+                File file = fileChooser.showSaveDialog(stage);
                 if (file != null) {
                     try {
                         canvas.snapshot(null, actualImage);
@@ -517,7 +499,7 @@ public class myMandelbrot extends Application {
 
             infoBox.getChildren().add(imageViewLogo);
 
-            imageSizeBox.getChildren().addAll(widthTextField, xLabel, heightTextField, saveImageButton);
+            imageSizeBox.getChildren().addAll(widthTextField, x, heightTextField, saveImageButton);
 
             Label iterationsLabel = new Label("Iterations: " + (int)maximumIterations);
             TextField iterationsTextField = new TextField();
@@ -543,7 +525,7 @@ public class myMandelbrot extends Application {
             iterationsBox.setAlignment(Pos.CENTER_LEFT);
             iterationsBox.getChildren().addAll(iterationsLabel, iterationsTextField, refreshButton);
 
-            progressBar.setPrefWidth(200);
+            progressBar.setPrefWidth(220);
 
             Label labelHSB = new Label("HSB");
 
@@ -633,7 +615,6 @@ public class myMandelbrot extends Application {
             canvas.heightProperty().bind(scene.heightProperty());
 
             canvas.widthProperty().addListener((obs, oldVal, newVal) -> {
-                imageSizeLabel.setText("Image size: " + (int) newVal.doubleValue() + "x" + (int) canvas.getHeight());
                 widthTextField.setText(String.valueOf((int) newVal.doubleValue()));
                 pauseTransition.setOnFinished(e -> MandelbrotSet(THREADS));
                 pauseTransition.playFromStart();
@@ -739,14 +720,16 @@ public class myMandelbrot extends Application {
 
     public void MandelbrotSet() {
         long startTime = System.currentTimeMillis(); // Record the start time
-        WritableImage image = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
+        int width = (int) (canvas.getWidth() * supersamplingFactor);
+        int height = (int) (canvas.getHeight() * supersamplingFactor);
+        WritableImage image = new WritableImage(width, height);
         actualImage = image;
-        double centerX = canvas.getWidth() / 2.0;
-        double centerY = canvas.getHeight() / 2.0;
-        for (int x = 0; x < canvas.getWidth(); x++) {
-            for (int y = 0; y < canvas.getHeight(); y++) {
-                double cr = xPos / width + (x - centerX) / zoom;
-                double ci = yPos / height + (y - centerY) / zoom;       //getting position of the points on the canvas
+        double centerX = width / 2.0;
+        double centerY = height / 2.0;
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                double cr = xPos / this.width + (x - centerX) / (zoom * supersamplingFactor);
+                double ci = yPos / this.height + (y - centerY) / (zoom * supersamplingFactor);
                 double zr = 0;
                 double zi = 0;
 
@@ -769,7 +752,10 @@ public class myMandelbrot extends Application {
                 }
             }
         }
-        canvas.getGraphicsContext2D().drawImage(image, 0, 0);
+
+        WritableImage downscaledImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
+        canvas.getGraphicsContext2D().drawImage(image, 0, 0, canvas.getWidth(), canvas.getHeight());
+        actualImage = downscaledImage;
         long endTime = System.currentTimeMillis(); // Record the end time
         resultCompilation = (endTime - startTime);
         compilationTimeLabel.setText("Execution time: " + resultCompilation / 1000.0);
@@ -784,15 +770,12 @@ public class myMandelbrot extends Application {
         List<myMandelbrot.MandelbrotService> services = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(n);
 
-        double centerX = canvas.getWidth() / 2.0;
-        double centerY = canvas.getHeight() / 2.0;
-
         for (int i = 0; i < n; i++) {
             int start = i * portion;
             int end = start + portion;
 
             // Pass the centerX and centerY values to the MandelbrotService constructor
-            myMandelbrot.MandelbrotService service = new myMandelbrot.MandelbrotService(start, end, centerX, centerY);
+            myMandelbrot.MandelbrotService service = new myMandelbrot.MandelbrotService(start, end);
             service.setOnSucceeded(event -> {
                 latch.countDown();
                 service.cancel();
@@ -800,6 +783,13 @@ public class myMandelbrot extends Application {
             service.start();
             services.add(service);
         }
+
+        DoubleBinding totalProgressBinding = Bindings.createDoubleBinding(() ->
+                        services.stream().mapToDouble(Service::getProgress).sum() / n,
+                services.stream().map(Service::progressProperty).toArray(DoubleExpression[]::new));
+
+        // Bind the progress bar to the totalProgressBinding
+        progressBar.progressProperty().bind(totalProgressBinding);
 
         Thread waitForCompletion = new Thread(() -> {
             try {
@@ -817,7 +807,7 @@ public class myMandelbrot extends Application {
                 long endTime = System.currentTimeMillis(); // Record the end time
                 resultCompilation = (endTime - startTime);
                 compilationTimeLabel.setText("Execution time: " + resultCompilation / 1000.0);
-                calcProgress(progressBar);
+                progressBar.progressProperty().unbind();
             });
         });
 
@@ -829,14 +819,10 @@ public class myMandelbrot extends Application {
     private class MandelbrotService extends Service<WritableImage> {
         private final int start;
         private final int end;
-        private final double centerX;
-        private final double centerY;
 
-        public MandelbrotService(int start, int end, double centerX, double centerY) {
+        public MandelbrotService(int start, int end) {
             this.start = start;
             this.end = end;
-            this.centerX = centerX;
-            this.centerY = centerY;
         }
 
         @Override
@@ -846,6 +832,8 @@ public class myMandelbrot extends Application {
                 protected WritableImage call() {
                     WritableImage localImage = new WritableImage((int) canvas.getWidth(), end - start);
                     PixelWriter pixelWriter = localImage.getPixelWriter(); // use localImage instead of image
+                    double centerX = canvas.getWidth() / 2.0;
+                    double centerY = canvas.getHeight() / 2.0;
                     for (int y = start; y < end; y++) {
                         for (int x = 0; x < canvas.getWidth(); x++) {
                             double cr = xPos / width + (x - centerX) / zoom;
@@ -871,6 +859,7 @@ public class myMandelbrot extends Application {
                                 pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 % 360, saturationFactor, iterationsOfZ / maximumIterations));
                             }
                         }
+                        updateProgress(y - start + 1, end - start);
                     }
                     return localImage;
                 }
