@@ -241,7 +241,7 @@ public class myMandelbrot extends Application {
                 else {
                     superSamplingFactor = 1;
                 }
-                MandelbrotSet(THREADS);
+                MandelbrotSet();
                 canvas.requestFocus();
             });
 
@@ -293,10 +293,31 @@ public class myMandelbrot extends Application {
 
             TextField hueField = new TextField();
             onlyNumbers(hueField);
+            hueField.setOnKeyPressed(event -> {
+                if (event.getCode() == KeyCode.ESCAPE) {
+                    hueField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    event.consume();
+                }
+            });
+
             TextField saturationField = new TextField();
             onlyNumbers(saturationField);
+            saturationField.setOnKeyPressed(event -> {
+                if (event.getCode() == KeyCode.ESCAPE) {
+                    saturationField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    event.consume();
+                }
+            });
+
             TextField brightnessField = new TextField();
             onlyNumbers(brightnessField);
+            brightnessField.setOnKeyPressed(event -> {
+                if (event.getCode() == KeyCode.ESCAPE) {
+                    brightnessField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    event.consume();
+                }
+            });
+
             hueField.setMinWidth(40);
             saturationField.setMinWidth(40);
             brightnessField.setMinWidth(40);
@@ -394,6 +415,7 @@ public class myMandelbrot extends Application {
                             up(100);
                             MandelbrotSet();
                         }
+                        event.consume();
                     }
                     case A, LEFT -> {
                         if (event.isShiftDown()) {
@@ -421,6 +443,7 @@ public class myMandelbrot extends Application {
                             right(100);
                             MandelbrotSet();
                         }
+                        event.consume();
                     }
                     case EQUALS -> {zoomIn();MandelbrotSet();}
                     case MINUS -> {zoomOut();MandelbrotSet();}
@@ -607,12 +630,30 @@ public class myMandelbrot extends Application {
 
             TextField hueField = new TextField();
             onlyNumbers(hueField);
+            hueField.setOnKeyPressed(event -> {
+                if (event.getCode() == KeyCode.ESCAPE) {
+                    hueField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    event.consume();
+                }
+            });
 
             TextField saturationField = new TextField();
             onlyNumbers(saturationField);
+            saturationField.setOnKeyPressed(event -> {
+                if (event.getCode() == KeyCode.ESCAPE) {
+                    saturationField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    event.consume();
+                }
+            });
 
             TextField brightnessField = new TextField();
             onlyNumbers(brightnessField);
+            brightnessField.setOnKeyPressed(event -> {
+                if (event.getCode() == KeyCode.ESCAPE) {
+                    brightnessField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    event.consume();
+                }
+            });
 
             hueField.setMinWidth(40);
             saturationField.setMinWidth(40);
@@ -654,7 +695,7 @@ public class myMandelbrot extends Application {
             colorPicker.setOnAction(event -> {
                 colorOfSet = colorPicker.getValue();
                 System.out.println("Selected Color: " + colorOfSet.toString());
-                MandelbrotSet();
+                MandelbrotSet(THREADS);
             });
 
             Button resetInside = new Button("Reset");
@@ -662,7 +703,7 @@ public class myMandelbrot extends Application {
                 if (determineColor == 2 || determineColor == 1)
                     colorOfSet = Color.web("#43003E");
                 else colorOfSet=Color.web("#000000");
-                MandelbrotSet();
+                MandelbrotSet(THREADS);
             });
 
             HBox insideSet = new HBox(colorPicker, resetInside);
@@ -713,6 +754,7 @@ public class myMandelbrot extends Application {
                             up(100);
                             MandelbrotSet(THREADS);
                         }
+                        event.consume();
                     }
                     case A, LEFT -> {
                         if (event.isShiftDown()) {
@@ -740,6 +782,7 @@ public class myMandelbrot extends Application {
                             right(100);
                             MandelbrotSet(THREADS);
                         }
+                        event.consume();
                     }
                     case EQUALS -> {zoomIn();MandelbrotSet(THREADS);}
                     case MINUS -> {zoomOut();MandelbrotSet(THREADS);}
@@ -820,7 +863,7 @@ public class myMandelbrot extends Application {
                 if (iterationsOfZ == maximumIterations) {  //inside the set
                     image.getPixelWriter().setColor(x, y, colorOfSet);
                 } else if (determineColor == 1) {
-                    image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 * iterationsOfZ % 360, saturationFactor , brightnessFactor));
+                    image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 * (iterationsOfZ) % 360, saturationFactor , brightnessFactor));
                 } else if (determineColor == 3) {
                     image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 % 360, iterationsOfZ/maximumIterations, brightnessFactor));
                 } else if (determineColor == 4){   //black background
@@ -933,7 +976,7 @@ public class myMandelbrot extends Application {
                             if (iterationsOfZ == maximumIterations) {  //inside the set
                                 pixelWriter.setColor(x, y - start, colorOfSet);
                             } else if (determineColor == 1) {
-                                pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 * iterationsOfZ % 360, saturationFactor , brightnessFactor));
+                                pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 * (iterationsOfZ) % 360+240, saturationFactor , brightnessFactor));
                             } else if (determineColor == 3) {
                                 pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 % 360, iterationsOfZ/maximumIterations, brightnessFactor));
                             } else if (determineColor == 4){   //black background
