@@ -6,7 +6,6 @@ module com.example.mandelbrot {
     requires javafx.swing;
     requires javafx.graphics;
 
-
     opens com.example.mandelbrot to javafx.fxml;
     exports com.example.mandelbrot;
 }

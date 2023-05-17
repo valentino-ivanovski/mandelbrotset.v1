@@ -6,7 +6,6 @@ package com.example.mandelbrot;
  *   Subject: Programming 3 */
 
 /* =========================================Imports================================================ */
-
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.PauseTransition;
@@ -63,7 +62,7 @@ public class myMandelbrot extends Application {
     double saturationFactor = 1; // Set the saturation to a high value for vibrant colors
     double brightnessFactor = 1;
     int determineColor;
-    int THREADS = Runtime.getRuntime().availableProcessors();
+    int THREADS = 8;//Runtime.getRuntime().availableProcessors();
     long resultCompilation;
     private int number;
     ProgressBar progressBar = new ProgressBar();
@@ -448,10 +447,10 @@ public class myMandelbrot extends Application {
                     case EQUALS -> {zoomIn();MandelbrotSet();}
                     case MINUS -> {zoomOut();MandelbrotSet();}
                     case BACK_SPACE -> {reset();MandelbrotSet();}
-                    case DIGIT1 -> {colorHue();MandelbrotSet();}
-                    case DIGIT2 -> {colorHue2();MandelbrotSet();}
-                    case DIGIT3 -> {colorLight();MandelbrotSet();}
-                    case DIGIT4 -> {colorDark();MandelbrotSet();}
+                    case DIGIT4 -> {colorHue();MandelbrotSet();}
+                    case DIGIT3 -> {colorHue2();MandelbrotSet();}
+                    case DIGIT1 -> {colorLight();MandelbrotSet();}
+                    case DIGIT2 -> {colorDark();MandelbrotSet();}
                 }
             });     //key listener
             scene.setOnMouseClicked(event -> {
@@ -471,7 +470,7 @@ public class myMandelbrot extends Application {
 
             stage.setScene(scene);
 
-            colorHue();
+            colorLight();
             MandelbrotSet();
             System.out.println("hue"+hueFactor);
             System.out.println("sat"+saturationFactor);
@@ -480,6 +479,7 @@ public class myMandelbrot extends Application {
             canvas.requestFocus();
             stage.setTitle("Mandelbrot Set");
             stage.show();
+            stage.toFront();
         }
         else if(number==2){
 
@@ -787,10 +787,10 @@ public class myMandelbrot extends Application {
                     case EQUALS -> {zoomIn();MandelbrotSet(THREADS);}
                     case MINUS -> {zoomOut();MandelbrotSet(THREADS);}
                     case BACK_SPACE -> {reset();MandelbrotSet(THREADS);}
-                    case DIGIT1 -> {colorHue();MandelbrotSet(THREADS);}
-                    case DIGIT2 -> {colorHue2();MandelbrotSet(THREADS);}
-                    case DIGIT3 -> {colorLight();MandelbrotSet(THREADS);}
-                    case DIGIT4 -> {colorDark();MandelbrotSet(THREADS);}
+                    case DIGIT4 -> {colorHue();MandelbrotSet(THREADS);}
+                    case DIGIT3 -> {colorHue2();MandelbrotSet(THREADS);}
+                    case DIGIT1 -> {colorLight();MandelbrotSet(THREADS);}
+                    case DIGIT2 -> {colorDark();MandelbrotSet(THREADS);}
                 }
             });     //key listener
             scene.setOnMouseClicked(event -> {
@@ -810,7 +810,7 @@ public class myMandelbrot extends Application {
 
             stage.setScene(scene);
 
-            colorHue();
+            colorLight();
             MandelbrotSet(THREADS);
             System.out.println("hue"+hueFactor);
             System.out.println("sat"+saturationFactor);
@@ -818,6 +818,40 @@ public class myMandelbrot extends Application {
 
             canvas.requestFocus();
             stage.setTitle("Mandelbrot Set");
+            stage.show();
+            stage.toFront();
+        }
+        else if(number==3){
+            try {
+                //fix this with local variables
+                File directory = new File("/Users/tino/Local Files/Class Notes/Second Year/First Semester/Mandelbrot Set Parallel/untitled/src");
+                String mpjHome = System.getenv("MPJ_HOME");
+
+                ProcessBuilder javacPb = new ProcessBuilder("javac", "-cp", ".:" + mpjHome + "/lib/mpj.jar", "MandelbrotSetMPI.java");
+                javacPb.directory(directory);
+                javacPb.redirectErrorStream(true);
+                javacPb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                Process javacProcess = javacPb.start();
+                javacProcess.waitFor();
+
+                ProcessBuilder mpjPb = new ProcessBuilder(mpjHome + "/bin/mpjrun.sh", "-np", "8", "MandelbrotSetMPI");
+                mpjPb.directory(directory);
+                mpjPb.redirectErrorStream(true);
+                mpjPb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                Process mpjProcess = mpjPb.start();
+                mpjProcess.waitFor();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            stage.setTitle("Mandelbrot Set");
+
+            BorderPane root = new BorderPane();
+            Canvas canvas = new Canvas(800, 600); // Create 800x600 Canvas
+            Image image = new Image("file:/Users/tino/Local Files/Class Notes/Second Year/First Semester/Mandelbrot Set Parallel/untitled/mandelbrot.png");
+            canvas.getGraphicsContext2D().drawImage(image,0,0);
+            root.setCenter(canvas);
+
+            stage.setScene(new Scene(root, 800, 600)); // Create 800x600 Scene
             stage.show();
         }
     }
@@ -839,16 +873,16 @@ public class myMandelbrot extends Application {
 
     public void MandelbrotSet() {
         long startTime = System.currentTimeMillis(); // Record the start time
-        int width = (int) (canvas.getWidth() * superSamplingFactor);
-        int height = (int) (canvas.getHeight() * superSamplingFactor);
-        WritableImage image = new WritableImage(width, height);
+        int scaledWidth = (int) (canvas.getWidth() * superSamplingFactor);
+        int scaledHeight = (int) (canvas.getHeight() * superSamplingFactor);
+        WritableImage image = new WritableImage(scaledWidth, scaledHeight);
         actualImage = image;
-        double centerX = width / 2.0;
-        double centerY = height / 2.0;
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                double cr = xPos / this.width + (x - centerX) / (zoom * superSamplingFactor);
-                double ci = yPos / this.height + (y - centerY) / (zoom * superSamplingFactor);
+        double centerX = scaledWidth / 2.0;
+        double centerY = scaledHeight / 2.0;
+        for (int x = 0; x < scaledWidth; x++) {
+            for (int y = 0; y < scaledHeight; y++) {
+                double cr = xPos / width + (x - centerX) / (zoom * superSamplingFactor);
+                double ci = yPos / height + (y - centerY) / (zoom * superSamplingFactor);
                 double zr = 0;
                 double zi = 0;
 
@@ -865,9 +899,9 @@ public class myMandelbrot extends Application {
                 } else if (determineColor == 1) {
                     image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 * (iterationsOfZ) % 360, saturationFactor , brightnessFactor));
                 } else if (determineColor == 3) {
-                    image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 % 360, iterationsOfZ/maximumIterations, brightnessFactor));
+                    image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 % 360, (iterationsOfZ/maximumIterations)*saturationFactor, brightnessFactor));
                 } else if (determineColor == 4){   //black background
-                    image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 % 360, saturationFactor, iterationsOfZ / maximumIterations));
+                    image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor * 360 % 360, saturationFactor, (iterationsOfZ / maximumIterations)));
                 } else if (determineColor == 2){
                     image.getPixelWriter().setColor(x, y, Color.hsb(hueFactor*iterationsOfZ*7%360, saturationFactor , brightnessFactor));
                 }
@@ -978,7 +1012,7 @@ public class myMandelbrot extends Application {
                             } else if (determineColor == 1) {
                                 pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 * (iterationsOfZ) % 360+240, saturationFactor , brightnessFactor));
                             } else if (determineColor == 3) {
-                                pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 % 360, iterationsOfZ/maximumIterations, brightnessFactor));
+                                pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 % 360, (iterationsOfZ/maximumIterations)*saturationFactor, brightnessFactor));
                             } else if (determineColor == 4){   //black background
                                 pixelWriter.setColor(x, y - start, Color.hsb(hueFactor * 360 % 360, saturationFactor, iterationsOfZ / maximumIterations));
                             } else if (determineColor == 2){
@@ -1016,7 +1050,7 @@ public class myMandelbrot extends Application {
         hueFactor = 0.6;
         saturationFactor = 1;
         brightnessFactor = 0.9;
-        colorOfSet = Color.web("#43003E");
+        colorOfSet = Color.web("#003333");
         determineColor = 3;
     }
     public void colorDark() {
@@ -1070,10 +1104,10 @@ public class myMandelbrot extends Application {
     public void reset() {
         zoom = 250.0;
         xPos = -470;
-        yPos = 30;
+        yPos = 0;
     }
 
-    /* ============================================MenuBar================================================ */
+    /* ============================================OnlyNumbers================================================ */
 
     public void onlyNumbers(TextField text) {
         text.textProperty().addListener((observable, oldNum, newNum) -> {
