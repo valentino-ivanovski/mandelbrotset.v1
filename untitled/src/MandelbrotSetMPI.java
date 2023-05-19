@@ -5,73 +5,71 @@ import javax.imageio.*;
 import java.io.*;
 
 public class MandelbrotSetMPI {
-    // Constants and parameters
-    static final int maximumIterations = 1000;
-    static final double xPos = -470, yPos = 0;
-    static final double zoom = 250.0;
-    static final int width = 800, height = 600;
-    static final Color colorOfSet = Color.BLACK;
-    static final Color[] COLORS = new Color[maximumIterations];
+    static int maximumIterations = 10000;
+    static double xStart = -400, yStart = 0;
+    static double zoomScale = 250.0;
+    static int widthImage = 800, heightImage = 600;
+    static Color colorOfSet = Color.BLACK;
+    static Color[] COLORS = new Color[maximumIterations];
 
     public static void main(String[] args) throws MPIException, IOException {
         MPI.Init(args);
-        int rank = MPI.COMM_WORLD.Rank();
-        int size = MPI.COMM_WORLD.Size();
+        int processNumber = MPI.COMM_WORLD.Rank();
+        int totalProcesses = MPI.COMM_WORLD.Size();
 
-        // Calculate portion of image this rank will handle
-        int portionHeight = height / size;
-        int start = rank * portionHeight;
-        int end = start + portionHeight;
+        int portion = heightImage / totalProcesses;
+        int begin = processNumber * portion;
+        int end = begin + portion;
 
-        long startTime = System.currentTimeMillis();  // Start timing here
+        long beginTime = System.currentTimeMillis();  // Start timing here
 
-        // Generate the portion of the Mandelbrot set
-        BufferedImage image = generateMandelbrot(start, end, portionHeight);
+        //Generate the portion of the Mandelbrot set
+        BufferedImage mandelbrotImage = generateMandelbrot(begin, end, portion);
 
-        // Gather all portions at root process
-        if (rank == 0) {
-            BufferedImage finalImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2d = finalImage.createGraphics();
+        //Gather all portions at root process
+        if (processNumber == 0) {
+            BufferedImage finalImage = new BufferedImage(widthImage, heightImage, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D imageGraphics = finalImage.createGraphics();
 
-            // Draw own portion
-            g2d.drawImage(image, 0, 0, null);
+            //Draw own portion
+            imageGraphics.drawImage(mandelbrotImage, 0, 0, null);
 
-            // Receive and draw portions from other processes
-            for (int i = 1; i < size; i++) {
-                byte[] receivedData = new byte[width * portionHeight * Integer.BYTES];
+            //Receive and draw portions from other processes
+            for (int i = 1; i < totalProcesses; i++) {
+                byte[] receivedData = new byte[widthImage * portion * Integer.BYTES];
                 MPI.COMM_WORLD.Recv(receivedData, 0, receivedData.length, MPI.BYTE, i, 0);
-                BufferedImage receivedImage = toBufferedImage(receivedData, width, portionHeight);
-                g2d.drawImage(receivedImage, 0, i * portionHeight, null);
+                BufferedImage receivedImage = toBufferedImage(receivedData, widthImage, portion);
+                imageGraphics.drawImage(receivedImage, 0, i * portion, null);
             }
-            g2d.dispose();
+            imageGraphics.dispose();
 
-            long endTime = System.currentTimeMillis();  // End timing here
+            long finishTime = System.currentTimeMillis();  // End timing here
 
-            // Calculate elapsed time
-            long elapsedTime = endTime - startTime;
-            System.out.println("Time taken to generate the Mandelbrot set: " + elapsedTime/1000.0 + " sec.");
+            //Calculate elapsed time
+            long timeToExecute = finishTime - beginTime;
+            System.out.println("Time taken to generate the Mandelbrot set: " + timeToExecute/1000.0 + " sec.");
 
-            // Save final image
+            //Save final image
             ImageIO.write(finalImage, "png", new File("mandelbrot.png"));
         } else {
-            // Send portion to root process
-            byte[] sendData = toByteArray(image);
+            //Send portion to root process
+            byte[] sendData = toByteArray(mandelbrotImage);
             MPI.COMM_WORLD.Send(sendData, 0, sendData.length, MPI.BYTE, 0, 0);
         }
 
         MPI.Finalize();
     }
 
-    // Method to generate Mandelbrot set
+    //Method to generate Mandelbrot set
     static BufferedImage generateMandelbrot(int start, int end, int height) {
-        BufferedImage image = new BufferedImage(MandelbrotSetMPI.width, height, BufferedImage.TYPE_INT_ARGB);
-        double centerX = MandelbrotSetMPI.width / 2.0;
-        double centerY = MandelbrotSetMPI.height / 2.0;
+        BufferedImage image = new BufferedImage(MandelbrotSetMPI.widthImage, height, BufferedImage.TYPE_INT_ARGB);
+        double centerX = MandelbrotSetMPI.widthImage / 2.0;
+        double centerY = MandelbrotSetMPI.heightImage / 2.0;
 
         for (int y = start; y < end; y++) {
-            for (int x = 0; x < MandelbrotSetMPI.width; x++) {
-                double cr = xPos / MandelbrotSetMPI.width + (x - centerX) / zoom;
-                double ci = yPos / height + (y - centerY) / zoom;
+            for (int x = 0; x < MandelbrotSetMPI.widthImage; x++) {
+                double cr = xStart / MandelbrotSetMPI.widthImage + (x - centerX) / zoomScale;
+                double ci = yStart / height + (y - centerY) / zoomScale;
                 double zr = 0;
                 double zi = 0;
 
@@ -93,7 +91,7 @@ public class MandelbrotSetMPI {
         return image;
     }
 
-    // Method to convert BufferedImage to byte array
+    //Method to convert BufferedImage to byte array
     static byte[] toByteArray(BufferedImage image) {
         DataBufferInt dataBuffer = (DataBufferInt) image.getRaster().getDataBuffer();
         int[] intData = dataBuffer.getData();
@@ -107,7 +105,7 @@ public class MandelbrotSetMPI {
         return byteData;
     }
 
-    // Method to convert byte array to BufferedImage
+    //Method to convert byte array to BufferedImage
     static BufferedImage toBufferedImage(byte[] data, int width, int height) {
         int[] intData = new int[data.length / 4];
         for (int i = 0; i < intData.length; i++) {

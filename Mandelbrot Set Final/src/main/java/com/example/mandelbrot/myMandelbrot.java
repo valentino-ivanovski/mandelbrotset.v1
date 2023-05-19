@@ -47,12 +47,10 @@ import javax.imageio.ImageIO;
 
 public class myMandelbrot extends Application {
 
-    int widthWindow = 800;
-    int heightWindow = 600;
+    int widthWindow = 800, heightWindow = 600;
     double totalIter = 100; //double because of the color calculation
+    double xStart = -400, yStart = 0;
     double zoomScale = 200.0; //by dividing by 200 we achieve the width and height of the complex plane to be x: -2 to 2 and y: -1.5 to 1.5 since 400/200 is 2 and 300/200 is 1.5
-    double xStart = -400;
-    double yStart = 0;
     double resolutionMultiplier = 1;
     int setMode;
     BorderPane layout;
@@ -196,7 +194,6 @@ public class myMandelbrot extends Application {
                 canvas.requestFocus();
             });
 
-            //adding the image to an imageview
             ImageView mainImageView = new ImageView(dialogImage);
             mainImageView.setFitHeight(190);
 
@@ -226,6 +223,7 @@ public class myMandelbrot extends Application {
                 canvas.requestFocus();
             });
 
+            refreshMultiplier.setMinWidth(68);
             HBox multiplierContent = new HBox(multiplierLabel, multiplierText, refreshMultiplier);
             multiplierContent.setSpacing(12);
             multiplierContent.setAlignment(Pos.CENTER_LEFT);
@@ -234,8 +232,8 @@ public class myMandelbrot extends Application {
 
             imageSizeContent.getChildren().addAll(widthTextField, x, heightTextField, saveImageButton);
 
-            Label iterationsLabel = new Label("Iterations: " + totalIter);
-            TextField iterationsText = new TextField();
+            Label iterationsLabel = new Label("Iterations:");
+            TextField iterationsText = new TextField(String.valueOf((int)totalIter));
             iterationsText.setPrefWidth(60);
             onlyAcceptNumbers(iterationsText);
 
@@ -245,8 +243,7 @@ public class myMandelbrot extends Application {
                 double temp=Double.parseDouble(iterationsText.getText());
                 totalIter = (int)temp;
                 MandelbrotSet();
-                iterationsLabel.setText("Iterations: "+totalIter);
-                iterationsText.setText("");
+                iterationsText.setText(String.valueOf((int)totalIter));
                 canvas.requestFocus();
             });
             iterationsText.setOnKeyPressed(event -> {
@@ -257,6 +254,7 @@ public class myMandelbrot extends Application {
             });
 
             iterationsContent.setAlignment(Pos.CENTER_LEFT);
+            refreshButton.setMinWidth(85);
             iterationsContent.getChildren().addAll(iterationsLabel, iterationsText, refreshButton);
 
             imageLoad_progressBar.setPrefWidth(220);
@@ -542,6 +540,8 @@ public class myMandelbrot extends Application {
                 MandelbrotSet(THREADS);
                 canvas.requestFocus();
             });
+
+            refreshMultiplier.setMinWidth(68);
             HBox multiplierContent = new HBox(multiplierLabel, multiplierText, refreshMultiplier);
             multiplierContent.setSpacing(12);
             multiplierContent.setAlignment(Pos.CENTER_LEFT);
@@ -550,8 +550,8 @@ public class myMandelbrot extends Application {
 
             imageSizeContent.getChildren().addAll(widthTextField, x, heightTextField, saveImageButton);
 
-            Label iterationsLabel = new Label("Iterations: " + totalIter);
-            TextField iterationsText = new TextField();
+            Label iterationsLabel = new Label("Iterations:");
+            TextField iterationsText = new TextField(String.valueOf((int)totalIter));
             iterationsText.setPrefWidth(60);
             onlyAcceptNumbers(iterationsText);
 
@@ -561,8 +561,7 @@ public class myMandelbrot extends Application {
                 double temp=Double.parseDouble(iterationsText.getText());
                 totalIter = (int)temp;
                 MandelbrotSet(THREADS);
-                iterationsLabel.setText("Iterations: " + totalIter);
-                iterationsText.setText("");
+                iterationsText.setText(String.valueOf((int)totalIter));
                 canvas.requestFocus();
             });
             iterationsText.setOnKeyPressed(event -> {
@@ -573,6 +572,7 @@ public class myMandelbrot extends Application {
             });
 
             iterationsContent.setAlignment(Pos.CENTER_LEFT);
+            refreshButton.setMinWidth(85);
             iterationsContent.getChildren().addAll(iterationsLabel, iterationsText, refreshButton);
 
             imageLoad_progressBar.setPrefWidth(220);
@@ -762,36 +762,40 @@ public class myMandelbrot extends Application {
             stage.toFront();
         }
         else if(setMode == 3){
-
             try {
-                File directory = new File("/Users/tino/Local Files/Class Notes/Second Year/First Semester/Mandelbrot Set Parallel/untitled/src");
-                String mpjHome = System.getenv("MPJ_HOME");
+                File mpiProgram = new File("/Users/tino/Local Files/Class Notes/Second Year/First Semester/Mandelbrot Set Parallel/untitled/src");
+                String home = System.getenv("MPJ_HOME");
 
-                ProcessBuilder javacPb = new ProcessBuilder("javac", "-cp", ".:" + mpjHome + "/lib/mpj.jar", "MandelbrotSetMPI.java");
-                javacPb.directory(directory);
-                javacPb.redirectErrorStream(true);
-                javacPb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                Process javacProcess = javacPb.start();
+                ProcessBuilder pbCompile = new ProcessBuilder("javac", "-cp", ".:" + home + "/lib/mpj.jar", "MandelbrotSetMPI.java");
+                pbCompile.directory(mpiProgram);
+                pbCompile.redirectErrorStream(true);
+                pbCompile.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+
+                Process javacProcess = pbCompile.start();
                 javacProcess.waitFor();
 
-                ProcessBuilder mpjPb = new ProcessBuilder(mpjHome + "/bin/mpjrun.sh", "-np", String.valueOf(THREADS), "MandelbrotSetMPI");
-                mpjPb.directory(directory);
-                mpjPb.redirectErrorStream(true);
-                mpjPb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                Process mpjProcess = mpjPb.start();
+                ProcessBuilder pbRun = new ProcessBuilder(home + "/bin/mpjrun.sh", "-np", String.valueOf(THREADS), "MandelbrotSetMPI");
+                pbRun.directory(mpiProgram);
+                pbRun.redirectErrorStream(true);
+                pbRun.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+
+                Process mpjProcess = pbRun.start();
                 mpjProcess.waitFor();
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             stage.setTitle("Mandelbrot Set");
 
-            BorderPane root = new BorderPane();
+            BorderPane layout = new BorderPane();
             Canvas canvas = new Canvas(800, 600);
-            Image image = new Image("file:/Users/tino/Local Files/Class Notes/Second Year/First Semester/Mandelbrot Set Parallel/untitled/mandelbrot.png");
-            canvas.getGraphicsContext2D().drawImage(image,0,0);
-            root.setCenter(canvas);
+            //⬇️ image that is being saved on my disk from the distributive program which is being run above
+            Image mandelbrotImage = new Image("file:/Users/tino/Local Files/Class Notes/Second Year/First Semester/Mandelbrot Set Parallel/untitled/mandelbrot.png");
+            canvas.getGraphicsContext2D().drawImage(mandelbrotImage,0,0);
+            layout.setCenter(canvas);
 
-            stage.setScene(new Scene(root, 800, 600));
+            stage.setScene(new Scene(layout, 800, 600));
             stage.show();
         }
     }
@@ -911,11 +915,11 @@ public class myMandelbrot extends Application {
     }
 
     private class MandelbrotService extends Service<WritableImage> {
-        private final int start;
+        private final int begin;
         private final int end;
 
         public MandelbrotService(int start, int end) {
-            this.start = start;
+            this.begin = start;
             this.end = end;
         }
 
@@ -926,10 +930,10 @@ public class myMandelbrot extends Application {
                 protected WritableImage call() {
                     int scaledLocalWidth = (int) (canvas.getWidth() * resolutionMultiplier);
                     int scaledHeight = (int) (canvas.getHeight() * resolutionMultiplier);
-                    int localHeight = end - start;
+                    int localHeight = end - begin;
                     WritableImage localImage = new WritableImage(scaledLocalWidth, localHeight);
                     PixelWriter pixelWriter = localImage.getPixelWriter();
-                    for (int y = start; y < end; y++) {
+                    for (int y = begin; y < end; y++) {
                         for (int x = 0; x < scaledLocalWidth; x++) {
                             double centerX = scaledLocalWidth / 2.0;
                             double centerY = scaledHeight / 2.0;
@@ -947,18 +951,18 @@ public class myMandelbrot extends Application {
                             }
 
                             if (currentIterations == totalIter) {
-                                pixelWriter.setColor(x, y - start, colorOfSet);
+                                pixelWriter.setColor(x, y - begin, colorOfSet);
                             } else if (setColorOfSet == 1) {
-                                pixelWriter.setColor(x, y - start, Color.hsb(hueMultiplier * 360 * (currentIterations) % 360+240, saturationMultiplier, brightnessMultiplier));
+                                pixelWriter.setColor(x, y - begin, Color.hsb(hueMultiplier * 360 * (currentIterations) % 360+240, saturationMultiplier, brightnessMultiplier));
                             } else if (setColorOfSet == 3) {
-                                pixelWriter.setColor(x, y - start, Color.hsb(hueMultiplier * 360 % 360, (currentIterations/ totalIter)* saturationMultiplier, brightnessMultiplier));
+                                pixelWriter.setColor(x, y - begin, Color.hsb(hueMultiplier * 360 % 360, (currentIterations/ totalIter)* saturationMultiplier, brightnessMultiplier));
                             } else if (setColorOfSet == 4){
-                                pixelWriter.setColor(x, y - start, Color.hsb(hueMultiplier * 360 % 360, saturationMultiplier, currentIterations / totalIter));
+                                pixelWriter.setColor(x, y - begin, Color.hsb(hueMultiplier * 360 % 360, saturationMultiplier, currentIterations / totalIter));
                             } else if (setColorOfSet == 2){
-                                pixelWriter.setColor(x, y - start, Color.hsb(hueMultiplier * currentIterations * 7 % 360, saturationMultiplier, brightnessMultiplier));
+                                pixelWriter.setColor(x, y - begin, Color.hsb(hueMultiplier * currentIterations * 7 % 360, saturationMultiplier, brightnessMultiplier));
                             }
                         }
-                        updateProgress(y - start + 1, end - start); //update the progress of the task, so it can be transferred to the progress bar
+                        updateProgress(y - begin + 1, end - begin); //update the progress of the task, so it can be transferred to the progress bar
                     }
                     return localImage;
                 }
