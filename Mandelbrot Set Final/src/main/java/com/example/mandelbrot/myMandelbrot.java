@@ -57,8 +57,8 @@ public class myMandelbrot extends Application {
     Canvas canvas = new Canvas(widthWindow-250, heightWindow);
     WritableImage finalImage;
     WritableImage savedFinalImage;
-    double hueMultiplier = 0.8; // Change this factor to adjust the rate of color change
-    double saturationMultiplier = 1; // Set the saturation to a high value for vibrant colors
+    double hueMultiplier = 0.8;
+    double saturationMultiplier = 1;
     double brightnessMultiplier = 1;
     Color colorOfSet=Color.web("#003333");
     int setColorOfSet;
@@ -71,7 +71,7 @@ public class myMandelbrot extends Application {
 
     @Override
     public void start(Stage stage) {
-        stage.setMinHeight(575);
+        stage.setMinHeight(600);
         stage.setMinWidth(385+250);
         stage.setResizable(true);
         Dialog<Integer> startDialog = new Dialog<>(); //return int value when closed, in order to choose mode
@@ -116,9 +116,9 @@ public class myMandelbrot extends Application {
         dialogContents.setSpacing(10);
         dialogContents.setAlignment(Pos.CENTER);
 
-        startDialog.getDialogPane().setContent(dialogContents); //adding the vbox to the dialog
+        startDialog.getDialogPane().setContent(dialogContents);
 
-        // make the dialog close when pressing x
+        //make the dialog close when pressing x
         startDialog.getDialogPane().getScene().getWindow().setOnCloseRequest(event -> startDialog.close());
 
         dialogImageView.requestFocus();
@@ -142,14 +142,14 @@ public class myMandelbrot extends Application {
 
             heightTextField.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
-                    heightTextField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    heightTextField.getParent().requestFocus();
                     event.consume();
                 }
             });
 
             widthTextField.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
-                    widthTextField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    widthTextField.getParent().requestFocus();
                     event.consume();
                 }
             });
@@ -170,7 +170,7 @@ public class myMandelbrot extends Application {
 
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Save File");
-                FileChooser.ExtensionFilter extensions = new FileChooser.ExtensionFilter("Images *.jpg, *.png", "*.jpg", "*.png");  //allowing the image to be saved as png or jpg
+                FileChooser.ExtensionFilter extensions = new FileChooser.ExtensionFilter("Images *.jpg, *.png", "*.jpg", "*.png");
 
                 fileChooser.getExtensionFilters().add(extensions);
 
@@ -204,7 +204,7 @@ public class myMandelbrot extends Application {
             multiplierText.setMaxWidth(38);
             multiplierText.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
-                    multiplierText.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    multiplierText.getParent().requestFocus();
                     event.consume();
                 }
             });
@@ -258,6 +258,7 @@ public class myMandelbrot extends Application {
             iterationsContent.getChildren().addAll(iterationsLabel, iterationsText, refreshButton);
 
             imageLoad_progressBar.setPrefWidth(220);
+            imageLoad_progressBar.setMinHeight(20);
 
             Label labelHSB = new Label("HSB");
 
@@ -458,14 +459,14 @@ public class myMandelbrot extends Application {
 
             heightTextField.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
-                    heightTextField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    heightTextField.getParent().requestFocus();
                     event.consume();
                 }
             });
 
             widthTextField.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
-                    widthTextField.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    widthTextField.getParent().requestFocus();
                     event.consume();
                 }
             });
@@ -486,7 +487,7 @@ public class myMandelbrot extends Application {
 
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Save File");
-                FileChooser.ExtensionFilter extensions = new FileChooser.ExtensionFilter("Images *.jpg, *.png", "*.jpg", "*.png");  //allowing the image to be saved as png or jpg
+                FileChooser.ExtensionFilter extensions = new FileChooser.ExtensionFilter("Images *.jpg, *.png", "*.jpg", "*.png");
 
                 fileChooser.getExtensionFilters().add(extensions);
 
@@ -511,7 +512,6 @@ public class myMandelbrot extends Application {
 
             });
 
-            //adding the image to an imageview
             ImageView mainImageView = new ImageView(dialogImage);
             mainImageView.setFitHeight(190);
 
@@ -522,7 +522,7 @@ public class myMandelbrot extends Application {
             multiplierText.setMaxWidth(38);
             multiplierText.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
-                    multiplierText.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    multiplierText.getParent().requestFocus();
                     event.consume();
                 }
             });
@@ -566,7 +566,7 @@ public class myMandelbrot extends Application {
             });
             iterationsText.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
-                    iterationsText.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    iterationsText.getParent().requestFocus();
                     event.consume();
                 }
             });
@@ -576,6 +576,7 @@ public class myMandelbrot extends Application {
             iterationsContent.getChildren().addAll(iterationsLabel, iterationsText, refreshButton);
 
             imageLoad_progressBar.setPrefWidth(220);
+            imageLoad_progressBar.setMinHeight(20);
 
             Label labelHSB = new Label("HSB");
 
@@ -592,7 +593,7 @@ public class myMandelbrot extends Application {
             onlyAcceptNumbers(hueText);
             hueText.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
-                    hueText.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    hueText.getParent().requestFocus();
                     event.consume();
                 }
             });
@@ -601,7 +602,7 @@ public class myMandelbrot extends Application {
             onlyAcceptNumbers(saturationText);
             saturationText.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
-                    saturationText.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    saturationText.getParent().requestFocus();
                     event.consume();
                 }
             });
@@ -610,7 +611,7 @@ public class myMandelbrot extends Application {
             onlyAcceptNumbers(brightnessText);
             brightnessText.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
-                    brightnessText.getParent().requestFocus(); // shift focus to the parent node to deselect the text field
+                    brightnessText.getParent().requestFocus();
                     event.consume();
                 }
             });
@@ -742,7 +743,7 @@ public class myMandelbrot extends Application {
                     case DIGIT3 -> {colorHue2();colorPicker.setValue(colorOfSet);MandelbrotSet(THREADS);}
                     case DIGIT4 -> {colorHue();colorPicker.setValue(colorOfSet);MandelbrotSet(THREADS);}
                 }
-            });     //key listener
+            });
 
             scene.setOnMouseClicked(event -> {
                 switch (event.getButton()) {
@@ -795,7 +796,9 @@ public class myMandelbrot extends Application {
             canvas.getGraphicsContext2D().drawImage(mandelbrotImage,0,0);
             layout.setCenter(canvas);
 
-            stage.setScene(new Scene(layout, 800, 600));
+            Scene scene = new Scene(layout, 800, 600);
+
+            stage.setScene(scene);
             stage.show();
         }
     }
@@ -858,8 +861,8 @@ public class myMandelbrot extends Application {
         WritableImage downscaledImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
         canvas.getGraphicsContext2D().drawImage(image, 0, 0, canvas.getWidth(), canvas.getHeight());
         savedFinalImage = downscaledImage;
-        long endTime = System.currentTimeMillis();
-        timeToExecute = (endTime - startTime);
+        long finishTime = System.currentTimeMillis();
+        timeToExecute = (finishTime - startTime);
         timeToExecuteLabel.setText("Execution time: " + timeToExecute / 1000.0 + "  (Threads: 1)");
         calcProgress(imageLoad_progressBar);
     }
@@ -867,22 +870,22 @@ public class myMandelbrot extends Application {
     public void MandelbrotSet(int n) {
         long beginTime = System.currentTimeMillis();
         int scaledHeight = (int) (canvas.getHeight() * resolutionMultiplier);
-        int portion = scaledHeight / n;
+        int section = scaledHeight / n;
         List<MandelbrotService> services = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(n);
 
         for (int i = 0; i < n; i++) {
-            int begin = i * portion; //compute the start point for each portion
-            int end = begin + portion;
+            int begin = i * section; //compute the start point for each section
+            int end = begin + section;
 
-            //creating a service for each portion of the image
+            //creating a service for each section of the image
             MandelbrotService service = new MandelbrotService(begin, end);
             service.setOnSucceeded(event -> {
                 latch.countDown(); //decrease the latch count when the service finishes
                 service.cancel(); //cancel the service
             });
-            service.start(); // start the service
-            services.add(service); // add the service to the services list
+            service.start(); //start the service
+            services.add(service);// add the service to the services list
         }
 
         //binding the progress of the services to the progress bar
