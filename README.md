@@ -15,3 +15,5 @@ This is a project developed by Valentino Ivanovski for the Computer Science cour
 5. If running on Windows, change the "/" to "\" in paths.
 ## How the program looks:
 ![Screenshot 1](./Images/SS1.png)
+### Exploring the Mandelbrot set:
+![GIF1](./Images/GIF1.gif)
