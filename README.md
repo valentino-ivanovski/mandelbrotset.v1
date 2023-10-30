@@ -17,6 +17,7 @@ This is a project developed by Valentino Ivanovski for the Computer Science cour
 <p align="center">
   <img src="./Images/SS1.png" alt="SS1">
 </p>
+<h3>How the program works:</h3>
 <p align="center">
   <img src="./Images/GIF1.gif" alt="GIF1" style="max-width:100%;">
 </p>
