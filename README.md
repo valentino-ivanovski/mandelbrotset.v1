@@ -19,6 +19,5 @@ This is a project developed by Valentino Ivanovski for the Computer Science cour
 </p>
 ## Exploring the Mandelbrot set:
 <p align="center">
-  <img src="./Images/GIF1.gif" alt="GIF1" style="max-width:100%;">
-  <img src="./Images/GIF1.gif" alt="GIF1" style="max-width:100%;">
+  <img src="./Images/GIF1.gif" alt="GIF1" style="max-width:100%; min-width:500px">
 </p>
