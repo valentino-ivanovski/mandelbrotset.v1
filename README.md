@@ -16,4 +16,6 @@ This is a project developed by Valentino Ivanovski for the Computer Science cour
 ## How the program looks:
 ![Screenshot 1](./Images/SS1.png)
 ### Exploring the Mandelbrot set:
-![GIF1](./Images/GIF1.gif)
+<p align="center">
+  <img src="./Images/GIF1.gif" alt="GIF1" width="400">
+</p>
