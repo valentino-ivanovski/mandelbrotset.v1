@@ -15,4 +15,6 @@ This is a project developed by Valentino Ivanovski for the Computer Science cour
 5. If running on Windows, change the "/" to "\" in paths.
 ## How the program looks:
 ![Screenshot 1](./Images/SS1.png)
-![GIF1](https://github.com/valentino-ivanovski/mandelbrotset.v1/assets/94650452/3aa73730-e426-4079-8249-ad9b7b8cdc4e)
+<p>
+  <img src="./Images/GIF1.gif" alt="GIF1">
+</p>
