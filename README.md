@@ -15,7 +15,7 @@ This is a project developed by Valentino Ivanovski for the Computer Science cour
 5. If running on Windows, change the "/" to "\" in paths.
 ## How the program looks:
 <p align="center">
-  <img src="./Images/SS1.png" alt="SS1" style="max-width:80%;">
+  <img src="./Images/SS1.png" alt="SS1" style="max-width:20%;">
 </p>
 <p align="center">
   <img src="./Images/GIF1.gif" alt="GIF1" style="max-width:100%;">
