@@ -13,3 +13,5 @@ This is a project developed by Valentino Ivanovski for the Computer Science cour
 3. Set an $MPJ_HOME environmental variable to the mpj express folder.
 4. Modify the path to the "src" folder of the "untitled" project on your machine on line 767 in myMandelbrot.java.
 5. If running on Windows, change the "/" to "\" in paths.
+## How the program looks:
+![Screenshot 1](./Images/SS1.png)
