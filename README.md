@@ -19,5 +19,5 @@ This is a project developed by Valentino Ivanovski for the Computer Science cour
 </p>
 <h2>How the program works:</h2>
 <p align="center">
-  <img src="./Images/GIF1.gif" alt="GIF1" >
+  <img src="./Images/GIF1.gif" alt="GIF1" style="max-width:100%; width:200%">
 </p>
