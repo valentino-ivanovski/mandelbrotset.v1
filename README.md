@@ -14,7 +14,9 @@ This is a project developed by Valentino Ivanovski for the Computer Science cour
 4. Modify the path to the "src" folder of the "untitled" project on your machine on line 767 in myMandelbrot.java.
 5. If running on Windows, change the "/" to "\" in paths.
 ## How the program looks:
-![Screenshot 1](./Images/SS1.png)
+<p align="center">
+  <img src="./Images/SS1.png" alt="SS1" style="max-width:100%;">
+</p>
 ### Exploring the Mandelbrot set:
 <p align="center">
   <img src="./Images/GIF1.gif" alt="GIF1" style="max-width:100%;">
