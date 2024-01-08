@@ -65,7 +65,7 @@ public class myMandelbrot extends Application {
     long timeToExecute;
     Label timeToExecuteLabel;
     Label timeToExecuteSaveImageLabel;
-    int THREADS = Runtime.getRuntime().availableProcessors();
+    int THREADS = 8;//Runtime.getRuntime().availableProcessors();
     ProgressBar imageLoad_progressBar = new ProgressBar();
     PauseTransition resizePause = new PauseTransition(Duration.millis(200)); //as long as we are resizing the window, the MandelbrotSet() method is waiting till the resizing stops, and then it waits the final 200ms before its being called.
 
@@ -372,7 +372,6 @@ public class myMandelbrot extends Application {
                 resizePause.playFromStart();
             });
 
-
             scene.setOnKeyPressed(event -> {
                 switch (event.getCode()) {
                     case W, UP -> {
@@ -428,6 +427,19 @@ public class myMandelbrot extends Application {
                     case PRIMARY -> {zoomIn();MandelbrotSet();}
                     case SECONDARY -> {zoomOut();MandelbrotSet();}
                 }
+            });
+
+            scene.setOnScroll(event -> {
+                double deltaY = event.getDeltaY();
+                if (deltaY > 0) {
+                    resolutionMultiplier = Math.min(1.0, resolutionMultiplier + 0.1);
+                } else {
+                    resolutionMultiplier = Math.max(0.1, resolutionMultiplier - 0.1);
+                }
+
+                MandelbrotSet();
+
+                event.consume();
             });
 
             stage.setScene(scene);
@@ -752,6 +764,19 @@ public class myMandelbrot extends Application {
                 }
             });
 
+            scene.setOnScroll(event -> {
+                double deltaY = event.getDeltaY();
+                if (deltaY > 0) {
+                    resolutionMultiplier = Math.min(1.0, resolutionMultiplier + 0.1);
+                } else {
+                    resolutionMultiplier = Math.max(0.1, resolutionMultiplier - 0.1);
+                }
+
+                MandelbrotSet();
+
+                event.consume();
+            });
+
             stage.setScene(scene);
 
             colorWhite();
@@ -833,16 +858,19 @@ public class myMandelbrot extends Application {
             for (int y = 0; y < scaledHeight; y++) {
                 double c_real = xStart / widthWindow + (x - centerX) / (zoomScale * resolutionMultiplier);
                 double c_imag = yStart / heightWindow + (y - centerY) / (zoomScale * resolutionMultiplier);
+
                 double z_real = 0;
                 double z_imag = 0;
 
-                int currentIterations;
+                int currentIterations = 0;
 
-                for (currentIterations = 0; currentIterations < totalIter && (z_real * z_real) + (z_imag * z_imag) < 4; currentIterations++) {
+                while (currentIterations < totalIter && (z_real * z_real) + (z_imag * z_imag) < 4) {
                     double old_z_real = z_real;
                     z_real = (z_real * z_real) - (z_imag * z_imag) + c_real;
                     z_imag = 2 * (old_z_real * z_imag) + c_imag;
+                    currentIterations++;
                 }
+
 
                 if (currentIterations == totalIter) {
                     image.getPixelWriter().setColor(x, y, colorOfSet);
@@ -942,15 +970,17 @@ public class myMandelbrot extends Application {
                             double centerY = scaledHeight / 2.0;
                             double c_real = xStart / widthWindow + (x - centerX) / (zoomScale * resolutionMultiplier);
                             double c_imag = yStart / heightWindow + (y - centerY) / (zoomScale * resolutionMultiplier);
+
                             double z_real = 0;
                             double z_imag = 0;
 
-                            int currentIterations;
+                            int currentIterations = 0;
 
-                            for (currentIterations = 0; currentIterations < totalIter && (z_real * z_real) + (z_imag * z_imag) < 4; currentIterations++) {
+                            while (currentIterations < totalIter && (z_real * z_real) + (z_imag * z_imag) < 4) {
                                 double old_z_real = z_real;
                                 z_real = (z_real * z_real) - (z_imag * z_imag) + c_real;
                                 z_imag = 2 * (old_z_real * z_imag) + c_imag;
+                                currentIterations++;
                             }
 
                             if (currentIterations == totalIter) {
