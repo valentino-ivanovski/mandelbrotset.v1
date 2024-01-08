@@ -1,8 +1,8 @@
-# Mandelbrot Set v1
+# Mandelbrot Set
 
 This project, developed by Valentino Ivanovski, was created as part of the Computer Science course Programming III at UP FAMNIT in 2023. The instructions below will guide you on how to open the program in IntelliJ IDEA. Note that the distributive mode is incomplete and intended to run only within the IDE.
 
-## Download link (MacOS): [mandelbrotset.v1](https://dropover.cloud/7c88be)
+## Download link (MacOS): [Mandelbrot Set](https://dropover.cloud/7c88be)
 
 ## Setup JavaFX (Instructions for IntelliJ IDEA)
 
