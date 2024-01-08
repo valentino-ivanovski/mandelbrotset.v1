@@ -1,5 +1,7 @@
 # mandelbrotset.v1
 This is a project developed by Valentino Ivanovski for the Computer Science course Programming III, at UP FAMNIT in 2023.
+## Download link (MacOS): https://dropover.cloud/7c88be
+# Instructions on how to open the program in IntelliJ Idea below:
 ## Setup JavaFx (Instructions only for IntelliJ Idea)
 1. Download the "javafx-sdk-19" folder that's in the repository.
 2. Open the project in IntelliJ Idea and head over to File –> Project Structure.
